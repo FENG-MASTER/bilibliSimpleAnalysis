@@ -8,7 +8,10 @@ public class Main {
         DBhelper.Init();
 
         Spider spider=new Spider();
-
+        spider.init();
         spider.crawl();
+    //    spider.crawl(769);
+
+        return;
     }
 }

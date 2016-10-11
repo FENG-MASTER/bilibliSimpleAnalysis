@@ -1,10 +1,10 @@
 /**
- * Created by qianzise on 2016/10/10 0010.
+ * 模型类,这个是根据b站给的api的返回json格式,对应的模型类,包含了一些视频相关的数据
  */
 public class VideoApiModel {
 
 
-    public int code;
+    public int code;//不知道是干嘛的数据,好像一直是0
     public data data;
 
     public int getCode() {
@@ -25,15 +25,15 @@ public class VideoApiModel {
 
 
     public class data{
-        public int view;
-        public int danmuku;
-        public int reply;
-        public int favorite;
-        public int coin;
-        public int share;
-        public int now_rank;
-        public int his_rank;
-        public String message;
+        public int view;//播放量
+        public int danmuku;//弹幕数
+        public int reply;//回复数
+        public int favorite;//收藏数
+        public int coin;//硬币数
+        public int share;//分享数
+        public int now_rank;///目前站内排名
+        public int his_rank;//历史站内最高排名
+        public String message;//也不知道这个参数是什么...好像一直是空的
 
         public int getView() {
             return view;
@@ -106,6 +106,13 @@ public class VideoApiModel {
         public void setMessage(String message) {
             this.message = message;
         }
+    }
+
+    public boolean hasData(){
+        return !(data.share==0&&data.view==0&&
+                data.reply==0&& data.his_rank==0&&
+                data.now_rank==0&& data.coin==0&&
+                data.danmuku==0&&data.favorite==0);
     }
 
 

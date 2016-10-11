@@ -13,19 +13,18 @@ import java.util.List;
 
 
 /**
- * Created by qianzise on 2016/10/10 0010.
+ *  单个爬虫任务,负责将特定的AV号的视频信息趴取下来
  */
 public class CrawlTask implements Runnable {
 
-    private int num;
-    private String ApiUrl;
-    private DBhelper dBhelper;
+    private int num;//要处理的AV号
+
+    private DBhelper dBhelper;//数据库
 
 
 
     public CrawlTask(int num) {
         this.num = num;
-        this.ApiUrl = Util.API_BASE_URL+num;
         dBhelper = DBhelper.getInstance();
     }
 
@@ -34,13 +33,20 @@ public class CrawlTask implements Runnable {
     public void run() {
 
         VideoInfo info=getInfo(num);
-        dBhelper.addDate(info);
+        if (info!=null){
+            dBhelper.addDate(info);
+      //      System.out.println(info.AV);
+        }
     }
 
 
     private VideoInfo getInfo(int AVNum){
 
-        VideoApiModel videoApiModel=formatJson(getJsonData(ApiUrl));
+        VideoApiModel videoApiModel=formatJson(getJsonData(Util.API_BASE_URL+num));
+        if (!videoApiModel.hasData()){
+
+            return null;
+        }
         VideoInfo info=getVideoInfo();
 
         info.AV=AVNum;
@@ -114,11 +120,27 @@ public class CrawlTask implements Runnable {
 
 
         Document document = null;
-        try {
-            document = Jsoup.connect(Util.WEB_BASE_URL + num).get();
-        } catch (IOException e) {
-            e.printStackTrace();
+
+        boolean isGet=false;
+
+        while (!isGet){
+            try {
+                document = Jsoup.connect(Util.WEB_BASE_URL + num).get();
+                isGet=true;
+            } catch (IOException e) {
+              isGet=false;
+            }
+
         }
+
+
+
+        if(document.getElementsByClass("tminfo").size()<=0){
+            VideoInfo emptyInfo=new VideoInfo();
+            emptyInfo.AV=num;
+            return emptyInfo;
+        }
+
         Elements areaElements = document.getElementsByClass("tminfo").get(0).children();
         Elements tagsElements = document.getElementsByClass("tag-list").get(0).children();
         Elements metaElements=document.getElementsByTag("meta");
@@ -152,6 +174,12 @@ public class CrawlTask implements Runnable {
 
 
     }
+
+
+
+
+
+
 
 
 

@@ -4,13 +4,13 @@ import java.sql.SQLException;
 import java.sql.Statement;
 
 /**
- * Created by qianzise on 2016/10/9 0009.
+ * 数据库工具类
  */
 public class DBhelper {
-    public static final String USER = "root";
-    public static final String PASSWORD = "1237891379";
-    public static final String HOST = "localhost";
-    public static final String PORT = "3306";
+    public static final String USER = "root"; //用户名
+    public static final String PASSWORD = "1237891379"; //密码
+    public static final String HOST = "localhost"; //IP
+    public static final String PORT = "3306";  //端口
 
 
     private static DBhelper instance;
@@ -53,7 +53,7 @@ public class DBhelper {
     private void createTable() {
         String sql = "CREATE TABLE `videos` ( " +
                 "`AV` INT(15) NOT NULL  PRIMARY KEY ," +
-                " `name` CHAR(40) NULL DEFAULT NULL , " +
+                " `name` TEXT NULL DEFAULT NULL , " +
                 "`view` INT NOT NULL , " +
                 "`danmaku` INT NOT NULL , " +
                 "`reply` INT NOT NULL , " +
@@ -64,9 +64,9 @@ public class DBhelper {
                 " `his_rank` INT NOT NULL , " +
                 " `tags` TEXT NULL,"+
                 "`message` TEXT  NULL ," +
-                " `author` CHAR(20) NULL DEFAULT NULL , " +
-                "`mainArea` CHAR(10) NULL DEFAULT NULL , " +
-                "`subArea` CHAR(10) NULL DEFAULT NULL ) ";
+                " `author` CHAR(30) NULL DEFAULT NULL , " +
+                "`mainArea` CHAR(30) NULL DEFAULT NULL , " +
+                "`subArea` CHAR(30) NULL DEFAULT NULL ) ";
         try {
             statement.executeUpdate(sql);
         } catch (SQLException e) {
@@ -101,6 +101,19 @@ public class DBhelper {
                             String tags) {
 
 
+        if (name!=null&&name.contains("'")){
+           name= name.replace("'","''");
+        }
+
+        if (autour!=null&&autour.contains("'")){
+            autour= autour.replace("'","''");
+        }
+
+        if (tags!=null&&!tags.contains("\\'")&&tags.contains("'")){
+            tags= tags.replace("'","''");
+        }
+
+
         String sql="INSERT INTO `videos` " +
                 "(`AV`, `name`, " +
                 "`view`, `danmaku`," +
@@ -121,6 +134,8 @@ public class DBhelper {
             res = statement.executeUpdate(sql);
         } catch (SQLException e) {
             e.printStackTrace();
+            System.out.println(AV);
+            System.out.println(sql);
         }
 
         return res>0;

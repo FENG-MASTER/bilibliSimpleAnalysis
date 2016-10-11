@@ -8,23 +8,24 @@ import java.util.List;
  */
 public class VideoInfo {
 
-    public int AV;
-    public String name;
-    public int view;
-    public int danmuku;
-    public int reply;
-    public int favorite;
-    public int coin;
-    public int share;
-    public int now_rank;
-    public int his_rank;
-    public String message;
-    public String author;
-    public String mainArea;
-    public String subArea;
+    public int AV;//AV号
+    public String name;//标题
+    public int view;//播放量
+    public int danmuku;//弹幕数
+    public int reply;//回复数
+    public int favorite;//收藏数
+    public int coin;//硬币数
+    public int share;//分享数
+    public int now_rank;//现在的排名
+    public int his_rank;//历史最高排名
+    public String message;// 目前不知道用处
+    public String author;//UP主
+    public String mainArea;//分区(主)
+    public String subArea;//分区(子)
+
+    private String tags;//标签
 
 
-    private String tags;
 
     public String getTags() {
         return tags;
@@ -39,6 +40,10 @@ public class VideoInfo {
     }
 
     public void setTags(List<String> list){
+
+        if (list.size()==0){
+            return;
+        }
         Iterator<String> iterator=list.iterator();
         StringBuilder builder=new StringBuilder();
 
@@ -51,6 +56,9 @@ public class VideoInfo {
 
         setTags(builder.toString());
     }
+
+
+
 
 
 

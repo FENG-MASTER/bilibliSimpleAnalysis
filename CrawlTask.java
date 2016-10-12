@@ -2,7 +2,6 @@ import com.google.gson.Gson;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
@@ -10,6 +9,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 
 /**
@@ -21,10 +21,12 @@ public class CrawlTask implements Runnable {
 
     private DBhelper dBhelper;//数据库
 
+    private AtomicInteger numOfThreads;//当前使用线程数(活动的爬虫数目)
 
-
-    public CrawlTask(int num) {
+    public CrawlTask(AtomicInteger numOfThreads, int num) {
         this.num = num;
+        this.numOfThreads=numOfThreads;
+        numOfThreads.addAndGet(1);
         dBhelper = DBhelper.getInstance();
     }
 
@@ -35,8 +37,9 @@ public class CrawlTask implements Runnable {
         VideoInfo info=getInfo(num);
         if (info!=null){
             dBhelper.addDate(info);
-      //      System.out.println(info.AV);
+            System.out.println(info.AV);
         }
+        numOfThreads.addAndGet(-1);
     }
 
 
@@ -44,11 +47,13 @@ public class CrawlTask implements Runnable {
 
         VideoApiModel videoApiModel=formatJson(getJsonData(Util.API_BASE_URL+num));
         if (!videoApiModel.hasData()){
-
+            //如果API返回的数据全部为0.那认为没有这个视频,不进行更深入的数据获取
             return null;
         }
+
         VideoInfo info=getVideoInfo();
 
+        //重新包装更多的数据来源
         info.AV=AVNum;
         info.coin=videoApiModel.getData().getCoin();
         info.danmuku=videoApiModel.getData().getDanmuku();
@@ -78,7 +83,7 @@ public class CrawlTask implements Runnable {
 
         try {
             url=new URL(sUrl);
-            reader=new BufferedReader(new InputStreamReader(url.openStream()));
+            reader=new BufferedReader(new InputStreamReader(url.openStream()));//耗时部分,读取网页内容
 
             String temp = reader.readLine();
             while (temp != null) {
@@ -91,22 +96,25 @@ public class CrawlTask implements Runnable {
             e.printStackTrace();
         } catch (IOException e) {
             e.printStackTrace();
+        }finally {
+
+            try {
+                reader.close();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+
         }
-
-
-        try {
-            reader.close();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
         return builder.toString();
 
     }
 
 
 
-
+    /*
+    * 获取更详细的信息
+    *
+    * */
     private VideoInfo getVideoInfo() {
 
         VideoInfo info=new VideoInfo();
@@ -124,8 +132,9 @@ public class CrawlTask implements Runnable {
         boolean isGet=false;
 
         while (!isGet){
+            //这个循环是为了连接超时,无限重试
             try {
-                document = Jsoup.connect(Util.WEB_BASE_URL + num).get();
+                document = Jsoup.connect(Util.WEB_BASE_URL + num).get();//耗时部分,读取网页内容
                 isGet=true;
             } catch (IOException e) {
               isGet=false;
@@ -136,8 +145,10 @@ public class CrawlTask implements Runnable {
 
 
         if(document.getElementsByClass("tminfo").size()<=0){
+            //能进入到这个if里,证明页面上没有这个标签,也就是找不到视频或者视频被删除或者仅会员才能看的视频等,,,
+            // 这边我统一处理,先把API给的数据留下,其他空
             VideoInfo emptyInfo=new VideoInfo();
-            emptyInfo.AV=num;
+            emptyInfo.AV=num;//记得把AV号存一下
             return emptyInfo;
         }
 
@@ -152,7 +163,7 @@ public class CrawlTask implements Runnable {
         int metaNum=metaElements.size();
         for (int i =0;i<metaNum;i++){
             if(metaElements.get(i).attr("name").equals("author")){
-                author=metaElements.get(i).attr("content");
+                author=metaElements.get(i).attr("content");//这个是检测网页头的meta元素里的author,这个我看了下,是UP主的名字,我就把这个当作UP主名字存起来
                 break;
             }
         }
@@ -160,7 +171,7 @@ public class CrawlTask implements Runnable {
 
         int tagsSize = tagsElements.size();
         for (int i = 0; i < tagsSize; i++) {
-            tags.add(tagsElements.get(i).child(0).html());
+            tags.add(tagsElements.get(i).child(0).html());//标签列表
         }
 
         info.name=title;
@@ -169,19 +180,9 @@ public class CrawlTask implements Runnable {
         info.subArea=subArea;
         info.setTags(tags);
 
-
         return info;
 
-
     }
-
-
-
-
-
-
-
-
 
 
 

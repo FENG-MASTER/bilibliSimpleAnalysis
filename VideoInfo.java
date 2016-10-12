@@ -1,7 +1,7 @@
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
-import java.util.List;
+
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.*;
 
 /**
  * Created by qianzise on 2016/10/10 0010.
@@ -10,6 +10,9 @@ public class VideoInfo {
 
     public int AV;//AV号
     public String name;//标题
+
+
+    private Date date;
     public int view;//播放量
     public int danmuku;//弹幕数
     public int reply;//回复数
@@ -27,7 +30,23 @@ public class VideoInfo {
 
 
 
+
+    public void setDate(String dateString){
+        try {
+            date= SimpleDateFormat.getInstance().parse(dateString);
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public String getDate() {
+        return SimpleDateFormat.getInstance().format(date);
+    }
+
+
+
     public String getTags() {
+
         return tags;
     }
 

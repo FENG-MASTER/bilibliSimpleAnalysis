@@ -11,22 +11,34 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class Spider {
 
 
-    private ThreadPoolExecutor executor=null;
+    private ThreadPoolExecutor executor=null;//线程池
 
+    private AtomicInteger crawlNum=new AtomicInteger(1);//线程安全的整数,这个是AV号
 
-    private AtomicInteger crawlNum=new AtomicInteger();
+    private AtomicInteger numOfThreads=new AtomicInteger(0);
 
-    public static final int MAX_AV=7099999;
+   // public static final int MAX_AV=7199999;
+     public static final int MAX_AV=1000;
 
 
     public void crawl(){
 
         long startTime=System.currentTimeMillis();
 
-        while (crawlNum.intValue()<MAX_AV){
+        while (crawlNum.intValue()<MAX_AV||numOfThreads.intValue()!=0){
 
-            executor.execute(new CrawlTask(crawlNum.intValue()));
-            crawlNum.addAndGet(1);
+            executor.execute(new CrawlTask(numOfThreads,crawlNum.intValue()));
+            crawlNum.addAndGet(1);//++
+
+            if (numOfThreads.intValue()>=Util.MAX_ACTIVITY_LEN){
+
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+
         }
 
         executor.shutdown();
@@ -36,13 +48,16 @@ public class Spider {
 
     }
 
+    /*
+    * 用于测试,单个AV号信息获取
+    * */
     public void crawl(int num){
-        executor.execute(new CrawlTask(num));
+        executor.execute(new CrawlTask(numOfThreads,num));
     }
 
     public void init(){
         executor =new ThreadPoolExecutor(8,10,3, TimeUnit.SECONDS,new LinkedBlockingDeque<Runnable>());
-        crawlNum.set(1);
+
     }
 
 }

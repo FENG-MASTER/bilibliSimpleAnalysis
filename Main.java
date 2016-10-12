@@ -5,13 +5,13 @@ public class Main {
 
     public static void main(String args[]){
 
-        DBhelper.Init();
+        DBhelper.Init();//初始化数据库
 
         Spider spider=new Spider();
         spider.init();
         spider.crawl();
     //    spider.crawl(769);
-
+        DBhelper.getInstance().finish();
         return;
     }
 }

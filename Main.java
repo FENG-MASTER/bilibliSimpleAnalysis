@@ -9,9 +9,9 @@ public class Main {
 
         Spider spider=new Spider();
         spider.init();
-        spider.crawl();
+     //   spider.crawl();
 
-    //    spider.crawl(527000);
+        spider.crawl(523526);
 
 
 

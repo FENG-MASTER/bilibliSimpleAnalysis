@@ -125,7 +125,7 @@ public class DBhelper {
                 his_rank + ", '" + message + "', '" +
                 autour + "', '" + mainArea + "', '" + subArea + "','"+tags+"')";
 
-   //     PreparedStatement preparedStatement=connection.prepareStatement()
+
 
         int res=0;
         try {
@@ -184,17 +184,9 @@ public class DBhelper {
 
     private void checkInfo(VideoInfo info){
 
-        if (info.name!=null&&!info.name.contains("\\'")&&info.name.contains("'")){
-            info.name= info.name.replace("'","''");
-        }
-
-        if (info.author!=null&&info.author.contains("\\'")&&info.author.contains("'")){
-            info.author= info.author.replace("'","''");
-        }
-
-        if (info.getTags()!=null&&!info.getTags().contains("\\'")&&info.getTags().contains("'")){
-            info.setTags(info.getTags().replace("'","''"));
-        }
+        info.name=StringEscapeUtils.escapeXml10(info.name);
+        info.author=StringEscapeUtils.escapeXml10(info.author);
+        info.setTags(StringEscapeUtils.escapeXml10(info.getTags()));
     }
 
 

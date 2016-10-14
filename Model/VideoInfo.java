@@ -1,3 +1,4 @@
+package Model;
 
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -11,8 +12,8 @@ public class VideoInfo {
     public int AV;//AV号
     public String name;//标题
 
-
     private Date date;
+
     public int view;//播放量
     public int danmuku;//弹幕数
     public int reply;//回复数
@@ -29,18 +30,22 @@ public class VideoInfo {
     private String tags;//标签
 
 
-
+    private   SimpleDateFormat simpleDateFormat=new SimpleDateFormat("yyyy-MM-dd HH:mm");
 
     public void setDate(String dateString){
+
         try {
-            date= SimpleDateFormat.getInstance().parse(dateString);
+            date= simpleDateFormat.parse(dateString.replace("T"," "));
         } catch (ParseException e) {
             e.printStackTrace();
         }
     }
 
     public String getDate() {
-        return SimpleDateFormat.getInstance().format(date);
+        if (null==date){
+            return "0000-00-00 00:00:00";
+        }
+        return simpleDateFormat.format(date)+":00";
     }
 
 
@@ -77,8 +82,8 @@ public class VideoInfo {
     }
 
 
-
-
-
-
+    @Override
+    public String toString() {
+        return "AV:"+AV+" name:"+name;
+    }
 }

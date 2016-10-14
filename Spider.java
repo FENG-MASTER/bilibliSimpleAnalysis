@@ -17,8 +17,8 @@ public class Spider {
 
     private AtomicInteger numOfThreads=new AtomicInteger(0);
 
-   // public static final int MAX_AV=7199999;
-     public static final int MAX_AV=1000;
+    public static final int MAX_AV=8999999;
+   //  public static final int MAX_AV=1000;
 
 
     public void crawl(){
@@ -27,24 +27,48 @@ public class Spider {
 
         while (crawlNum.intValue()<MAX_AV||numOfThreads.intValue()!=0){
 
-            executor.execute(new CrawlTask(numOfThreads,crawlNum.intValue()));
-            crawlNum.addAndGet(1);//++
+            if(crawlNum.intValue() % 1000 ==0){
+                System.out.println("进度:"+crawlNum);
+            }
 
-            if (numOfThreads.intValue()>=Util.MAX_ACTIVITY_LEN){
+            if(crawlNum.intValue()<MAX_AV){
+                executor.execute(new CrawlTask(numOfThreads,crawlNum.intValue()));
+                crawlNum.addAndGet(1);//++
 
+                if (numOfThreads.intValue()>=Util.MAX_THREADS){
+
+                    try {
+                        Thread.sleep(100);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+
+            }else{
                 try {
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
                 } catch (InterruptedException e) {
                     e.printStackTrace();
                 }
             }
 
+
+
+
+
         }
+
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+
 
         executor.shutdown();
 
         long useTime=System.currentTimeMillis()-startTime;
-        System.out.println("历时:"+   useTime/1000/60 +"分钟");
+        System.out.println("历时:"+   useTime/1000 +"秒");
 
     }
 
@@ -56,7 +80,7 @@ public class Spider {
     }
 
     public void init(){
-        executor =new ThreadPoolExecutor(8,10,3, TimeUnit.SECONDS,new LinkedBlockingDeque<Runnable>());
+        executor =new ThreadPoolExecutor(Util.MAX_THREADS,Util.MAX_THREADS+10,3, TimeUnit.SECONDS,new LinkedBlockingDeque<Runnable>());
 
     }
 

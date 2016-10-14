@@ -10,7 +10,11 @@ public class Main {
         Spider spider=new Spider();
         spider.init();
         spider.crawl();
-    //    spider.crawl(769);
+
+    //    spider.crawl(527000);
+
+
+
         DBhelper.getInstance().finish();
         return;
     }

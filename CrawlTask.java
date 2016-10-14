@@ -1,13 +1,17 @@
+import Model.VideoApiModel;
+import Model.VideoInfo;
 import com.google.gson.Gson;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -26,18 +30,17 @@ public class CrawlTask implements Runnable {
     public CrawlTask(AtomicInteger numOfThreads, int num) {
         this.num = num;
         this.numOfThreads=numOfThreads;
-        numOfThreads.addAndGet(1);
         dBhelper = DBhelper.getInstance();
     }
 
 
     @Override
     public void run() {
-
+        numOfThreads.addAndGet(1);
         VideoInfo info=getInfo(num);
         if (info!=null){
             dBhelper.addDate(info);
-            System.out.println(info.AV);
+         //   System.out.println("AV:"+info.AV+"   线程:" +numOfThreads);
         }
         numOfThreads.addAndGet(-1);
     }
@@ -69,12 +72,13 @@ public class CrawlTask implements Runnable {
     }
 
     private VideoApiModel formatJson(String json) {
-        Gson gson = new Gson();
-        VideoApiModel video = gson.fromJson(json, VideoApiModel.class);//部分信息
-        return video;
+        //部分信息
+        return new Gson().fromJson(json, VideoApiModel.class);
     }
 
     private String getJsonData(String sUrl){
+
+
 
         URL url=null;
         BufferedReader reader=null;
@@ -99,12 +103,18 @@ public class CrawlTask implements Runnable {
         }finally {
 
             try {
-                reader.close();
+
+                if(reader!=null){
+                    reader.close();
+                }
+
             } catch (IOException e) {
                 e.printStackTrace();
             }
 
         }
+
+
         return builder.toString();
 
     }
@@ -117,6 +127,7 @@ public class CrawlTask implements Runnable {
     * */
     private VideoInfo getVideoInfo() {
 
+
         VideoInfo info=new VideoInfo();
 
         String title;
@@ -124,6 +135,7 @@ public class CrawlTask implements Runnable {
         String mainArea;
         String subArea;
         List<String> tags = new ArrayList<>();
+        String date=null;
 
 
 
@@ -160,25 +172,27 @@ public class CrawlTask implements Runnable {
         mainArea = areaElements.get(1).child(0).html();
         subArea = areaElements.get(2).child(0).html();
 
-        int metaNum=metaElements.size();
-        for (int i =0;i<metaNum;i++){
-            if(metaElements.get(i).attr("name").equals("author")){
-                author=metaElements.get(i).attr("content");//这个是检测网页头的meta元素里的author,这个我看了下,是UP主的名字,我就把这个当作UP主名字存起来
-                break;
+
+        for (Element metaElement : metaElements) {
+            if (metaElement.attr("name").equals("author")) {
+                author = metaElement.attr("content");//这个是检测网页头的meta元素里的author,这个我看了下,是UP主的名字,我就把这个当作UP主名字存起来
+            }else if(metaElement.attr("itemprop").equals("uploadDate")){
+                date=metaElement.attr("content");
             }
         }
 
-
-        int tagsSize = tagsElements.size();
-        for (int i = 0; i < tagsSize; i++) {
-            tags.add(tagsElements.get(i).child(0).html());//标签列表
+        for (Element tagsElement : tagsElements) {
+            tags.add(tagsElement.child(0).html());//标签列表
         }
 
         info.name=title;
+        info.setDate(date);
         info.author=author;
         info.mainArea=mainArea;
         info.subArea=subArea;
         info.setTags(tags);
+
+
 
         return info;
 

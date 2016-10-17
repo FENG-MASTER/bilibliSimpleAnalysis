@@ -1,7 +1,11 @@
+package task;
+
+import Helper.DBhelper;
 import Model.VideoApiModel;
 import Model.VideoInfo;
 import com.google.gson.Gson;
 
+import com.sun.webkit.network.Util;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -11,9 +15,9 @@ import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
+
 
 
 /**
@@ -48,7 +52,8 @@ public class CrawlTask implements Runnable {
 
     private VideoInfo getInfo(int AVNum){
 
-        VideoApiModel videoApiModel=formatJson(getJsonData(Util.API_BASE_URL+num));
+
+        VideoApiModel videoApiModel=formatJson(getJsonData(util.Util.API_BASE_URL+num));
         if (!videoApiModel.hasData()){
             //如果API返回的数据全部为0.那认为没有这个视频,不进行更深入的数据获取
             return null;
@@ -80,7 +85,7 @@ public class CrawlTask implements Runnable {
 
 
 
-        URL url=null;
+        URL url;
         BufferedReader reader=null;
 
         StringBuilder builder = new StringBuilder();
@@ -146,7 +151,7 @@ public class CrawlTask implements Runnable {
         while (!isGet){
             //这个循环是为了连接超时,无限重试
             try {
-                document = Jsoup.connect(Util.WEB_BASE_URL + num).get();//耗时部分,读取网页内容
+                document = Jsoup.connect(util.Util.WEB_BASE_URL + num).get();//耗时部分,读取网页内容
                 isGet=true;
             } catch (IOException e) {
               isGet=false;

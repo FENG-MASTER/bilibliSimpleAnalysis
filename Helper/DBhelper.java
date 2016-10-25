@@ -42,7 +42,7 @@ public class DBhelper {
             Class.forName("com.mysql.jdbc.Driver");
 
             connection = DriverManager.getConnection(url);
-            statement = connection.createStatement();
+            statement=connection.createStatement();
 
             if (!hasTable()) {
                 createTable();
@@ -59,6 +59,7 @@ public class DBhelper {
     }
 
     private void createTable() {
+
         String sql = "CREATE TABLE `videos` ( " +
                 "`AV` INT(15) NOT NULL  PRIMARY KEY ," +
                 " `name` TEXT NULL DEFAULT NULL , " +
@@ -239,6 +240,12 @@ public class DBhelper {
 
         if (!videoInfos.isEmpty()) {
             addDates(videoInfos);
+        }
+        try {
+            statement.close();
+            connection.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
         }
     }
 

@@ -157,7 +157,7 @@ public class CrawlTask implements Runnable {
               isGet=false;
             }
 
-        }
+        }//2075000
 
 
 
